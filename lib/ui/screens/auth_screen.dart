@@ -1,3 +1,4 @@
+import 'package:ecommerce_frontend/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -13,14 +14,50 @@ class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  void authButtonPressed() {
+  final AuthService _authService = AuthService();
+  void authButtonPressed() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Form submitted!')));
-      usernameController.clear();
-      emailController.clear();
-      passwordController.clear();
+      try {
+        if (isLogin) {
+          await _authService.login(
+            emailController.text,
+            passwordController.text,
+          );
+        } else {
+          await _authService.signup(
+            usernameController.text,
+            emailController.text,
+            passwordController.text,
+          );
+        }
+
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, '/home');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isLogin
+                  ? 'Logged in successfully!'
+                  : 'Account created successfully!',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        usernameController.clear();
+        emailController.clear();
+        passwordController.clear();
+      } catch (e) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -106,8 +143,8 @@ class _AuthScreenState extends State<AuthScreen> {
                         });
                       },
                       child: isLogin
-                          ? Text("doesn't have an account? signup")
-                          : Text("already have an account? signin"),
+                          ? Text("doesn't have an account? signUp")
+                          : Text("already have an account? Login"),
                     ),
                   ],
                 ),

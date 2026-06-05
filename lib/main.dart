@@ -1,3 +1,4 @@
+import 'package:ecommerce_frontend/routes/route.dart';
 import 'package:ecommerce_frontend/ui/screens/auth_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'SastoTrade',
       debugShowCheckedModeBanner: false,
+      onGenerateRoute: AppRouter.generate,
       home: const AuthScreen(),
     );
   }
