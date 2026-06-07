@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:ecommerce_frontend/core/api_client.dart';
 import 'package:ecommerce_frontend/core/constants.dart';
 import 'package:ecommerce_frontend/models/user_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   final ApiClient _apiClient = ApiClient();
@@ -25,11 +26,14 @@ class AuthService {
       "${ApiConstants.authUser}/loginUser",
       {"email": email, "password": password},
     );
-    print("STATUS CODE: ${response.statusCode}");
-    print("RESPONSE BODY: ${response.body}");
+    // print("STATUS CODE: ${response.statusCode}");
+    // print("RESPONSE BODY: ${response.body}");
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print("data $data");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', data['token']);
       return UserModel.fromJson(data);
     } else {
       throw Exception(jsonDecode(response.body)['message'] ?? "login failed");
