@@ -1,5 +1,6 @@
 import 'package:ecommerce_frontend/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -15,6 +16,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final AuthService _authService = AuthService();
+
   void authButtonPressed() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -32,8 +34,29 @@ class _AuthScreenState extends State<AuthScreen> {
         }
 
         if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/home');
 
+        //Decode token and redirect based on role
+        final String? token = await _authService.getToken(); // get stored token
+
+        if (token == null) {
+          throw Exception('Token not found after authentication');
+        }
+
+        final Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+
+        final String role =
+            decodedToken['role'] ??
+            'user'; // adjust key to match your JWT payload
+
+        if (!mounted) return;
+
+        if (role == 'admin') {
+          Navigator.pushReplacementNamed(context, '/admin');
+        } else {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
