@@ -1,4 +1,7 @@
 import 'package:ecommerce_frontend/core/constants/app_colors.dart';
+import 'package:ecommerce_frontend/ui/screens/cart/cart_screen.dart';
+import 'package:ecommerce_frontend/ui/screens/home/home_screen.dart';
+import 'package:ecommerce_frontend/ui/screens/profile/profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class HomeBottomNav extends StatefulWidget {
@@ -13,7 +16,7 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
 
   static const _items = [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
-    _NavItem(icon: Icons.category_outlined, label: 'Browse'),
+    // _NavItem(icon: Icons.category_outlined, label: 'Browse'),
     _NavItem(icon: Icons.shopping_bag_outlined, label: 'Cart'),
     _NavItem(icon: Icons.person_outline, label: 'Profile'),
   ];
@@ -30,7 +33,32 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
           (i) => _NavButton(
             item: _items[i],
             isActive: i == _current,
-            onTap: () => setState(() => _current = i),
+            onTap: () {
+              setState(() => _current = i);
+
+              switch (i) {
+                case 0:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  );
+                  break;
+
+                case 1:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CartScreen()),
+                  );
+                  break;
+
+                case 2:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                  break;
+              }
+            },
           ),
         ),
       ),
@@ -38,15 +66,11 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
   }
 }
 
-// ── Data class ────────────────────────────────────────────────────────────────
-
 class _NavItem {
   final IconData icon;
   final String label;
   const _NavItem({required this.icon, required this.label});
 }
-
-// ── Nav button ────────────────────────────────────────────────────────────────
 
 class _NavButton extends StatelessWidget {
   final _NavItem item;

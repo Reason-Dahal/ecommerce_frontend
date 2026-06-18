@@ -1,6 +1,7 @@
 import "dart:convert";
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 
 class ApiClient {
   Future<Map<String, String>> _getHeaders() async {
@@ -26,6 +27,29 @@ class ApiClient {
       body: jsonEncode(body),
     );
     return response;
+  }
+
+  Future<http.StreamedResponse> multipartPost({
+    required String endPoint,
+    required Map<String, String> fields,
+    required File url,
+  }) async {
+    final headers = await _getHeaders();
+
+    final request = http.MultipartRequest('POST', Uri.parse(endPoint));
+
+    request.headers.addAll(headers);
+
+    request.fields.addAll(fields);
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'url', // must match backend field name
+        url.path,
+      ),
+    );
+
+    return await request.send();
   }
 
   Future<http.Response> put(String url, Map<String, dynamic> body) async {

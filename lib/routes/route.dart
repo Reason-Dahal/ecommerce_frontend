@@ -1,4 +1,4 @@
-import 'package:ecommerce_frontend/ui/screens/admin/admin_screen.dart';
+import 'package:ecommerce_frontend/ui/screens/admin/admin_product_list_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/auth/auth_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,9 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const HomeScreen());
 
       case '/admin':
-        return MaterialPageRoute(builder: (_) => const AdminScreen());
+        return MaterialPageRoute(
+          builder: (_) => const AdminProductListScreen(),
+        );
 
       case '/auth':
         return MaterialPageRoute(builder: (_) => const AuthScreen());

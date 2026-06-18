@@ -4,6 +4,7 @@ import 'package:ecommerce_frontend/ui/screens/home/widgets/home_app_bar.dart';
 import 'package:ecommerce_frontend/ui/screens/home/widgets/home_bottom_nav.dart';
 import 'package:ecommerce_frontend/ui/screens/home/widgets/home_search_bar.dart';
 import 'package:ecommerce_frontend/ui/screens/home/widgets/product_grid.dart';
+import 'package:ecommerce_frontend/ui/screens/widgets/app_drawer.dart';
 import 'package:ecommerce_frontend/models/product_model.dart';
 import 'package:ecommerce_frontend/services/product_service.dart';
 import 'package:ecommerce_frontend/shared/widgets/app_states.dart';
@@ -67,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bg,
+      drawer: const AppDrawer(),
       bottomNavigationBar: const HomeBottomNav(),
       body: FutureBuilder<List<ProductModel>>(
         future: _futureProducts,
