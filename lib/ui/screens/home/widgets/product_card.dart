@@ -21,6 +21,7 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
+  // ignore: unused_field
   bool _inWishlist = false;
 
   @override
@@ -36,11 +37,13 @@ class _ProductCardState extends State<ProductCard> {
     if (mounted) setState(() => _inWishlist = result);
   }
 
+  // ignore: unused_element
   Future<void> _toggleWishlist() async {
     final isNow = await WishlistService.instance.toggle(widget.product);
     if (mounted) setState(() => _inWishlist = isNow);
   }
 
+  // ignore: unused_element
   Color get _stockColor {
     if (widget.product.stock == 0) return Colors.red;
     if (widget.product.stock <= 3) return Colors.orange;
