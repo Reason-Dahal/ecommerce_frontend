@@ -3,6 +3,7 @@ import 'package:ecommerce_frontend/services/auth_service.dart';
 import 'package:ecommerce_frontend/ui/screens/admin/admin_product_list_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/admin/orders/admin_orders_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/cart/cart_screen.dart';
+import 'package:ecommerce_frontend/ui/screens/home/home_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/orders/my_orders_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/settings/settings_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/wishlist/wishlist_screen.dart';
@@ -67,7 +68,7 @@ class AppDrawer extends StatelessWidget {
                 _DrawerItem(
                   icon: Icons.home_outlined,
                   label: 'Home',
-                  onTap: () => Navigator.pop(context),
+                  onTap: () => _navigate(context, const HomeScreen()),
                 ),
 
                 if (!isAdmin) ...[

@@ -84,4 +84,16 @@ class OrderService {
 
     throw Exception("Failed to update order status");
   }
+
+  Future<void> deleteOrder({required String orderId}) async {
+    final response = await _apiClient.delete(
+      '${ApiConstants.order}/deleteOrder/$orderId',
+    );
+
+    if (response.statusCode == 200) {
+      return;
+    }
+
+    throw Exception("Failed to delete order");
+  }
 }

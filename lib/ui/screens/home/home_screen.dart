@@ -37,8 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // ── Filtering ─────────────────────────────────────────────────────────────────
-
   List<String> _buildCategories(List<ProductModel> products) {
     final seen = <String>{};
     return [
@@ -61,8 +59,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _capitalize(String s) =>
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1).toLowerCase();
-
-  // ── Build ─────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -110,8 +106,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-// ── Small local widget (too trivial to extract into its own file) ──────────────
 
 class _ResultCountHeader extends StatelessWidget {
   final int count;

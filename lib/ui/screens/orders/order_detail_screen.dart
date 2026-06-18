@@ -1,5 +1,7 @@
+import 'package:ecommerce_frontend/core/constants.dart';
 import 'package:ecommerce_frontend/core/constants/app_colors.dart';
 import 'package:ecommerce_frontend/core/utils/price_formatter.dart';
+import 'package:ecommerce_frontend/models/order_item_model.dart';
 import 'package:ecommerce_frontend/models/order_model.dart';
 import 'package:ecommerce_frontend/services/order_service.dart';
 import 'package:ecommerce_frontend/ui/screens/orders/widgets/order_item_tile.dart';
@@ -10,7 +12,9 @@ import 'package:flutter/material.dart';
 
 /// Shows everything about a single order: items, shipping address,
 /// and total. When [isAdmin] is true, tapping the status badge opens
-/// a picker to change the order's status.
+/// a picker to change the order's status, the customer's name/email
+/// is shown, and a larger product preview row helps the admin
+/// quickly identify what was ordered.
 class OrderDetailScreen extends StatefulWidget {
   final OrderModel order;
   final bool isAdmin;
@@ -113,8 +117,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               onTapChange: _changeStatus,
             ),
             const SizedBox(height: 16),
-            if (widget.isAdmin && _order.userEmail != null) ...[
-              _AdminCustomerCard(email: _order.userEmail!),
+            if (widget.isAdmin) ...[
+              if (_order.userEmail != null || _order.userName != null) ...[
+                _AdminCustomerCard(
+                  name: _order.userName,
+                  email: _order.userEmail,
+                ),
+                const SizedBox(height: 16),
+              ],
+              const _SectionTitle(title: 'Product Preview'),
+              const SizedBox(height: 8),
+              _ProductPreviewSection(items: _order.orderItems),
               const SizedBox(height: 16),
             ],
             ShippingAddressCard(address: _order.shippingAddress),
@@ -213,10 +226,14 @@ class _StatusSection extends StatelessWidget {
   }
 }
 
+/// Customer info row — shows the orderer's name where the static
+/// "Customer" label used to be, with their email alongside it on
+/// the right. Falls back to "Customer" if no name was returned.
 class _AdminCustomerCard extends StatelessWidget {
-  final String email;
+  final String? name;
+  final String? email;
 
-  const _AdminCustomerCard({required this.email});
+  const _AdminCustomerCard({this.name, this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -230,22 +247,23 @@ class _AdminCustomerCard extends StatelessWidget {
         children: [
           const Icon(Icons.person_outline, color: AppColors.accent, size: 18),
           const SizedBox(width: 8),
-          const Text(
-            'Customer',
-            style: TextStyle(
+          Text(
+            (name != null && name!.isNotEmpty) ? name! : 'Customer',
+            style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
           const Spacer(),
-          Text(
-            email,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
+          if (email != null && email!.isNotEmpty)
+            Text(
+              email!,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -267,6 +285,88 @@ class _SectionTitle extends StatelessWidget {
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+}
+
+/// Horizontal row of larger product images (one per order item) so
+/// an admin can identify what was ordered at a glance, without
+/// needing to read the smaller line-item list below.
+class _ProductPreviewSection extends StatelessWidget {
+  final List<OrderItemModel> items;
+  const _ProductPreviewSection({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 150,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, i) => _ProductPreviewCard(item: items[i]),
+      ),
+    );
+  }
+}
+
+class _ProductPreviewCard extends StatelessWidget {
+  final OrderItemModel item;
+  const _ProductPreviewCard({required this.item});
+
+  Widget _placeholder() {
+    return Container(
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Icon(
+        Icons.inventory_2_outlined,
+        color: AppColors.textSecondary,
+        size: 32,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final productUrl = item.product?.url;
+    final imageUrl = (productUrl != null && productUrl.isNotEmpty)
+        ? "${ApiConstants.imageUrl}/$productUrl"
+        : null;
+
+    return SizedBox(
+      width: 120,
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: imageUrl != null
+                ? Image.network(
+                    imageUrl,
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _placeholder(),
+                  )
+                : _placeholder(),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            item.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -4,12 +4,10 @@ import 'package:ecommerce_frontend/models/order_model.dart';
 import 'package:ecommerce_frontend/services/order_service.dart';
 import 'package:ecommerce_frontend/shared/widgets/app_states.dart';
 import 'package:ecommerce_frontend/ui/screens/admin/orders/widgets/admin_order_tile.dart';
+import 'package:ecommerce_frontend/ui/screens/admin/widgets/admin_search_bar.dart';
 import 'package:ecommerce_frontend/ui/screens/orders/order_detail_screen.dart';
 import 'package:flutter/material.dart';
 
-/// Admin view of every order in the system, with a status filter row
-/// and pull-to-refresh. Tapping an order opens OrderDetailScreen in
-/// admin mode, where the status can be changed.
 class AdminOrdersScreen extends StatefulWidget {
   const AdminOrdersScreen({super.key});
 
@@ -22,6 +20,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   late Future<List<OrderModel>> _futureOrders;
 
   String _selectedFilter = 'All';
+
+  final Set<String> _deletedIds = {};
+
+  final Set<String> _deletingIds = {};
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -48,11 +51,51 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     if (updated == true) _refresh();
   }
 
+  Future<void> _deleteOrder(OrderModel order) async {
+    setState(() => _deletingIds.add(order.id));
+
+    try {
+      await _orderService.deleteOrder(orderId: order.id);
+
+      if (!mounted) return;
+      setState(() {
+        _deletedIds.add(order.id);
+        _deletingIds.remove(order.id);
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Order deleted')));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _deletingIds.remove(order.id));
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
   List<OrderModel> _applyFilter(List<OrderModel> orders) {
-    if (_selectedFilter == 'All') return orders;
-    return orders
-        .where((o) => o.status.toLowerCase() == _selectedFilter.toLowerCase())
-        .toList();
+    var visible = orders.where((o) => !_deletedIds.contains(o.id));
+
+    if (_selectedFilter != 'All') {
+      visible = visible.where(
+        (o) => o.status.toLowerCase() == _selectedFilter.toLowerCase(),
+      );
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      visible = visible.where(
+        (o) =>
+            (o.userEmail?.toLowerCase().contains(q) ?? false) ||
+            o.shippingAddress.phone.toString().contains(q) ||
+            o.orderItems.any((i) => i.productRef.toLowerCase().contains(q)),
+      );
+    }
+
+    return visible.toList();
   }
 
   @override
@@ -98,6 +141,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
+                AdminSearchBar(
+                  onChanged: (q) => setState(() => _searchQuery = q),
+                ),
+                const SizedBox(height: 12),
+
                 _StatusFilterRow(
                   selected: _selectedFilter,
                   onSelect: (f) => setState(() => _selectedFilter = f),
@@ -121,6 +169,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     (order) => AdminOrderTile(
                       order: order,
                       onTap: () => _openOrder(order),
+                      onDelete: () => _deleteOrder(order),
+                      isDeleting: _deletingIds.contains(order.id),
                     ),
                   ),
               ],
@@ -131,8 +181,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     );
   }
 }
-
-// ── Status filter chips ─────────────────────────────────────────────────────────
 
 class _StatusFilterRow extends StatelessWidget {
   final String selected;
