@@ -1,8 +1,7 @@
 import 'package:ecommerce_frontend/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-/// Dark-themed labeled text field — shared across admin forms and
-/// checkout. (Same styling as the original AdminTextField.)
 class AppTextField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
@@ -10,6 +9,7 @@ class AppTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final bool enabled;
   final int maxLines;
+  final List<TextInputFormatter>? inputFormatters;
 
   const AppTextField({
     super.key,
@@ -19,6 +19,7 @@ class AppTextField extends StatelessWidget {
     this.validator,
     this.enabled = true,
     this.maxLines = 1,
+    this.inputFormatters,
   });
 
   @override
@@ -40,6 +41,7 @@ class AppTextField extends StatelessWidget {
           enabled: enabled,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          inputFormatters: inputFormatters,
           style: TextStyle(
             color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
             fontSize: 15,

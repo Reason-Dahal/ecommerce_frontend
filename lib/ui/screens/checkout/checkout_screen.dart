@@ -6,6 +6,8 @@ import 'package:ecommerce_frontend/ui/screens/checkout/widgets/checkout_item_sum
 import 'package:ecommerce_frontend/ui/screens/orders/my_orders_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:ecommerce_frontend/core/constants.dart';
 
 /// "Buy Now" checkout — single product, quantity chosen on the
 /// product detail screen. Collects shipping info and calls
@@ -117,7 +119,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 10),
             CheckoutItemSummary(
               productName: widget.product.name,
-              imageUrl: widget.product.url,
+              imageUrl: widget.product.url.isNotEmpty
+                  ? "${ApiConstants.imageUrl}/${widget.product.url}"
+                  : "",
               quantity: widget.quantity,
               unitPrice: (widget.product.price.toDouble()),
             ),
@@ -135,6 +139,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               label: 'Postal Code',
               controller: _postalCodeController,
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(6),
+              ],
               validator: (v) {
                 if (v == null || v.trim().isEmpty)
                   return 'Postal code is required';
@@ -148,11 +156,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               label: 'Phone Number',
               controller: _phoneController,
               keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
               validator: (v) {
                 if (v == null || v.trim().isEmpty)
                   return 'Phone number is required';
-                if (int.tryParse(v.trim()) == null)
-                  return 'Enter a valid phone number';
+                if (v.trim().length != 10)
+                  return 'Phone number must be exactly 10 digits';
                 return null;
               },
             ),
