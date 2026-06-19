@@ -4,7 +4,7 @@ import 'package:ecommerce_frontend/services/cart_service.dart';
 import 'package:ecommerce_frontend/services/wishlist_service.dart';
 import 'package:ecommerce_frontend/ui/screens/product_detail/product_detail_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:ecommerce_frontend/core/constants.dart';
+// import 'package:ecommerce_frontend/core/constants.dart';
 
 class ProductCard extends StatefulWidget {
   final ProductModel product;
@@ -79,7 +79,7 @@ class _ProductCardState extends State<ProductCard> {
   }
 
   Widget _buildImage(ProductModel product) {
-    final imageUrl = "${ApiConstants.imageUrl}/${product.url}";
+    final imageUrl = product.url;
 
     return Stack(
       fit: StackFit.expand,

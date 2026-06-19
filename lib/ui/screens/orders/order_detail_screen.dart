@@ -1,4 +1,4 @@
-import 'package:ecommerce_frontend/core/constants.dart';
+// import 'package:ecommerce_frontend/core/constants.dart';
 import 'package:ecommerce_frontend/core/constants/app_colors.dart';
 import 'package:ecommerce_frontend/core/utils/price_formatter.dart';
 import 'package:ecommerce_frontend/models/order_item_model.dart';
@@ -335,7 +335,7 @@ class _ProductPreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final productUrl = item.product?.url;
     final imageUrl = (productUrl != null && productUrl.isNotEmpty)
-        ? "${ApiConstants.imageUrl}/$productUrl"
+        ? productUrl
         : null;
 
     return SizedBox(

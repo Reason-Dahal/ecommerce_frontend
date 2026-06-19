@@ -1,32 +1,27 @@
 import 'package:ecommerce_frontend/core/constants/app_colors.dart';
 import 'package:ecommerce_frontend/core/utils/price_formatter.dart';
-import 'package:ecommerce_frontend/models/product_model.dart';
+import 'package:ecommerce_frontend/models/cart_item_model.dart';
+import 'package:ecommerce_frontend/services/cart_service.dart';
 import 'package:ecommerce_frontend/services/order_service.dart';
-import 'package:ecommerce_frontend/ui/screens/checkout/widgets/checkout_item_summary.dart';
 import 'package:ecommerce_frontend/ui/screens/orders/my_orders_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ecommerce_frontend/core/constants.dart';
 
-/// "Buy Now" checkout — single product, quantity chosen on the
-/// product detail screen. Collects shipping info and calls
-/// OrderService.createOrder().
-class CheckoutScreen extends StatefulWidget {
-  final ProductModel product;
-  final int quantity;
+/// Checkout for the cart (multiple items), with the same shipping
+/// validation as the single-product "Buy Now" checkout: city capped
+/// at 50 characters, postal code capped at 6 digits, phone required
+/// to be exactly 10 digits.
+class CartCheckoutScreen extends StatefulWidget {
+  final List<CartItemModel> items;
 
-  const CheckoutScreen({
-    super.key,
-    required this.product,
-    required this.quantity,
-  });
+  const CartCheckoutScreen({super.key, required this.items});
 
   @override
-  State<CheckoutScreen> createState() => _CheckoutScreenState();
+  State<CartCheckoutScreen> createState() => _CartCheckoutScreenState();
 }
 
-class _CheckoutScreenState extends State<CheckoutScreen> {
+class _CartCheckoutScreenState extends State<CartCheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
   final _orderService = OrderService();
 
@@ -36,7 +31,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   bool _isPlacingOrder = false;
 
-  double get _total => (widget.product.price * widget.quantity).toDouble();
+  double get _total => widget.items.fold(0, (sum, i) => sum + i.total);
 
   @override
   void dispose() {
@@ -53,23 +48,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     try {
       await _orderService.createOrder(
-        orderItems: [
-          {
-            "name": widget.product.name,
-            "quantity": widget.quantity,
-            "price": widget.product.price,
-            "productRef": widget.product.id,
-          },
-        ],
+        orderItems: widget.items
+            .map(
+              (i) => {
+                "name": i.name,
+                "quantity": i.quantity,
+                "price": i.price,
+                "productRef": i.productId,
+              },
+            )
+            .toList(),
         city: _cityController.text.trim(),
         postalCode: int.parse(_postalCodeController.text.trim()),
         phone: int.parse(_phoneController.text.trim()),
         totalPrice: _total,
       );
 
+      await CartService.instance.clearCart();
+
       if (!mounted) return;
 
-      // Show confirmation, then send the user to their order list.
       await showDialog(
         context: context,
         barrierDismissible: false,
@@ -117,12 +115,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           children: [
             const _SectionLabel(text: 'Order Summary'),
             const SizedBox(height: 10),
-            CheckoutItemSummary(
-              productName: widget.product.name,
-              imageUrl: widget.product.url,
-              quantity: widget.quantity,
-              unitPrice: (widget.product.price.toDouble()),
-            ),
+            _OrderSummaryList(items: widget.items),
             const SizedBox(height: 24),
             const _SectionLabel(text: 'Shipping Details'),
             const SizedBox(height: 10),
@@ -173,6 +166,102 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             _PlaceOrderButton(isLoading: _isPlacingOrder, onTap: _placeOrder),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Order summary ────────────────────────────────────────────────────────────
+
+class _OrderSummaryList extends StatelessWidget {
+  final List<CartItemModel> items;
+  const _OrderSummaryList({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < items.length; i++) ...[
+            _OrderSummaryRow(item: items[i]),
+            if (i != items.length - 1)
+              const Divider(color: AppColors.bg, height: 1),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderSummaryRow extends StatelessWidget {
+  final CartItemModel item;
+  const _OrderSummaryRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              item.url,
+              width: 42,
+              height: 42,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 42,
+                height: 42,
+                color: AppColors.imageShimmer,
+                child: const Icon(
+                  Icons.broken_image,
+                  color: Color(0xFF444444),
+                  size: 18,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Qty: ${item.quantity}  ·  ${PriceFormatter.format(item.price)} each',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            PriceFormatter.format(item.total),
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:ecommerce_frontend/core/constants/app_colors.dart';
 import 'package:ecommerce_frontend/models/product_model.dart';
 import 'package:flutter/material.dart';
-import 'package:ecommerce_frontend/core/constants.dart';
+// import 'package:ecommerce_frontend/core/constants.dart';
 
 /// Takes up 45 % of screen height. Renders the product image full-bleed
 /// with a back button, stock badge, and a gradient fade into the bg colour.
@@ -28,7 +28,7 @@ class ProductHeroImage extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             Image.network(
-              "${ApiConstants.imageUrl}/${product.url}",
+              product.url,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 color: AppColors.imageShimmer,

@@ -29,7 +29,7 @@ class AdminProductTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _Thumbnail(url: "${ApiConstants.imageUrl}/${product.url}"),
+          _Thumbnail(url: product.url),
           const SizedBox(width: 12),
           Expanded(child: _InfoColumn(product: product)),
           _ActionButtons(onEdit: onEdit, onDelete: onDelete),

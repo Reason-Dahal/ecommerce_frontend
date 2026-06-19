@@ -93,7 +93,7 @@ class AdminOrderTile extends StatelessWidget {
         : null;
     final productUrl = firstItem?.product?.url;
     final imageUrl = (productUrl != null && productUrl.isNotEmpty)
-        ? "${ApiConstants.imageUrl}/$productUrl"
+        ? productUrl
         : null;
 
     return GestureDetector(

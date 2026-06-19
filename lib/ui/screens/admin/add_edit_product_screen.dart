@@ -41,7 +41,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
-      selectedImage = File(image.path);
+      setState(() => selectedImage = File(image.path));
     }
   }
 

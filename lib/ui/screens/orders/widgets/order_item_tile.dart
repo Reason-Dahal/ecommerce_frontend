@@ -31,7 +31,7 @@ class OrderItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final productUrl = item.product?.url;
     final imageUrl = (productUrl != null && productUrl.isNotEmpty)
-        ? "${ApiConstants.imageUrl}/$productUrl"
+        ? productUrl
         : null;
 
     return Padding(

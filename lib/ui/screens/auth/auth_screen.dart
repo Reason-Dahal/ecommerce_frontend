@@ -53,21 +53,22 @@ class _AuthScreenState extends State<AuthScreen> {
       }
 
       if (!mounted) return;
+      if (isLogin) {
+        final String? token = await _authService.getToken();
+        if (token == null) {
+          throw Exception('Token not found after authentication');
+        }
 
-      final String? token = await _authService.getToken();
-      if (token == null) {
-        throw Exception('Token not found after authentication');
-      }
+        final Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        final String role = decodedToken['role'] ?? 'user';
 
-      final Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-      final String role = decodedToken['role'] ?? 'user';
+        if (!mounted) return;
 
-      if (!mounted) return;
-
-      if (role == 'admin') {
-        Navigator.pushReplacementNamed(context, '/admin');
-      } else {
-        Navigator.pushReplacementNamed(context, '/home');
+        if (role == 'admin') {
+          Navigator.pushReplacementNamed(context, '/admin');
+        } else {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       }
 
       if (!mounted) return;
