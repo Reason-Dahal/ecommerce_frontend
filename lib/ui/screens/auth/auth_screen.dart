@@ -36,6 +36,48 @@ class _AuthScreenState extends State<AuthScreen> {
     });
   }
 
+  /// Converts a raw exception into a short, user-friendly message.
+  /// Falls back to the cleaned-up original message if no known
+  /// pattern matches.
+  String _humanizeError(Object error) {
+    String message = error.toString();
+    if (message.startsWith('Exception: ')) {
+      message = message.substring('Exception: '.length);
+    }
+
+    final lower = message.toLowerCase();
+
+    if (lower.contains('socketexception') ||
+        lower.contains('failed host lookup') ||
+        lower.contains('network is unreachable')) {
+      return 'No internet connection. Please check your network and try again.';
+    }
+    if (lower.contains('timeout') || lower.contains('formatexception')) {
+      return 'Something went wrong. Please try again.';
+    }
+    if (lower.contains('email already exist')) {
+      return 'An account with this email already exists.';
+    }
+    if (lower.contains("user doesn't exist") ||
+        lower.contains('user not found')) {
+      return 'No account found with this email.';
+    }
+    if (lower.contains('incorrect email or password') ||
+        lower.contains('login failed')) {
+      return 'Incorrect email or password.';
+    }
+    if (lower.contains('please enter all the')) {
+      return 'Please fill in all required fields.';
+    }
+    if (lower.contains('current password is incorrect')) {
+      return 'Your current password is incorrect.';
+    }
+
+    return message.isNotEmpty
+        ? message
+        : 'Something went wrong. Please try again.';
+  }
+
   Future<void> authButtonPressed() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -53,6 +95,7 @@ class _AuthScreenState extends State<AuthScreen> {
       }
 
       if (!mounted) return;
+
       if (isLogin) {
         final String? token = await _authService.getToken();
         if (token == null) {
@@ -69,28 +112,42 @@ class _AuthScreenState extends State<AuthScreen> {
         } else {
           Navigator.pushReplacementNamed(context, '/home');
         }
-      }
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isLogin
-                ? 'Logged in successfully!'
-                : 'Account created successfully!',
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Logged in successfully!'),
+            backgroundColor: Colors.green,
           ),
-          backgroundColor: Colors.green,
-        ),
-      );
+        );
 
-      usernameController.clear();
-      emailController.clear();
-      passwordController.clear();
+        usernameController.clear();
+        emailController.clear();
+        passwordController.clear();
+      } else {
+        // Signup succeeded — don't auto-login, send the user to the
+        // login form instead so they sign in explicitly.
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully! Please log in.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        usernameController.clear();
+        emailController.clear();
+        passwordController.clear();
+
+        setState(() {
+          isLogin = true;
+          _formKey.currentState?.reset();
+        });
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text(_humanizeError(e)),
           backgroundColor: Colors.redAccent,
         ),
       );
