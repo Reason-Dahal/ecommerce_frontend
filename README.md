@@ -1,4 +1,4 @@
-# ecommerce_flutter
+# ecommerce_frontend
 
 A new Flutter project.
 
