@@ -95,7 +95,7 @@ class _RelatedProductCard extends StatelessWidget {
           children: [
             Expanded(
               child: Image.network(
-                "${ApiConstants.imageUrl}/${product.url}",
+                product.url,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(

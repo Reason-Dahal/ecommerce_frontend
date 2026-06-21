@@ -7,7 +7,7 @@ import 'package:ecommerce_frontend/ui/screens/orders/my_orders_screen.dart';
 import 'package:ecommerce_frontend/ui/screens/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ecommerce_frontend/core/constants.dart';
+// import 'package:ecommerce_frontend/core/constants.dart';
 
 /// "Buy Now" checkout — single product, quantity chosen on the
 /// product detail screen. Collects shipping info and calls
