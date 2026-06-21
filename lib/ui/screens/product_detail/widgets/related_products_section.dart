@@ -1,4 +1,4 @@
-import 'package:ecommerce_frontend/core/constants.dart';
+// import 'package:ecommerce_frontend/core/constants.dart';
 import 'package:ecommerce_frontend/core/constants/app_colors.dart';
 import 'package:ecommerce_frontend/core/utils/price_formatter.dart';
 import 'package:ecommerce_frontend/ui/screens/product_detail/product_detail_screen.dart';
